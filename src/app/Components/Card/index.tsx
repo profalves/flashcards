@@ -34,22 +34,22 @@ const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
           <p className="text-4xl font-bold">{translation?.inputText}</p>
         </div>
       ) : (
-        <>
-          <div className="flex justify-between flex-wrap" onClick={handleClick}>
+        <section onClick={handleClick}>
+          <div className="flex justify-between flex-wrap">
             <p className="text-4xl font-bold cursor-pointer ">
               {translation?.result}
             </p>
             <p className="flex items-end">
-              (pron. <i>&quot;{translation?.from.pronunciation}&quot;</i>)
+              (pron. <i>&quot;{translation?.from?.pronunciation}&quot;</i>)
             </p>
           </div>
           <hr className="text-white" />
           <ul className="flex flex-col py-2">
-            {translation?.examples.map((example, index) => (
+            {translation?.examples?.map((example, index) => (
               <code key={index}>* {example}</code>
             ))}
           </ul>
-        </>
+        </section>
       )}
       <button
         className="text-gray-200 bg-gray-500 p-2 rounded"
