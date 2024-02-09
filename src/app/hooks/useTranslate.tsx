@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const useTranslation = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [translation, setTranslation] = useState("");
 
   const translateText = async (text: string) => {
@@ -10,7 +10,6 @@ const useTranslation = () => {
     try {
       const response = await fetch(`/api/translate?text=${text}`);
       const data = await response.json();
-      console.log({ data });
       setTranslation(data);
     } catch (error) {
       setError("Error translating text");

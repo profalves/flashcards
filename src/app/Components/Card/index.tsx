@@ -1,12 +1,56 @@
+import { useState } from "react";
+
 interface CardProps {
-  information: any;
+  translation: Translation;
+  onRemove: () => void;
 }
 
-const Card: React.FC<CardProps> = ({ information }) => {
-  console.log({ information });
+const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
+  const [isFront, setIsFront] = useState(true);
+
+  const handleClick = () => {
+    setIsFront(!isFront);
+  };
+
+  const handleRemove = () => {
+    onRemove();
+  };
+
+  console.log({ translation });
+
   return (
-    <div className="bg-gray-800 text-white p-4 rounded shadow-md mb-4">
-      <p className="text-lg">{information?.result}</p>
+    <div className="min-h-40 bg-gray-800 text-white p-4 rounded shadow-md mb-4">
+      {isFront ? (
+        <div
+          className="grid place-content-center w-full h-full"
+          onClick={handleClick}
+        >
+          <p className="text-4xl font-bold">{translation?.inputText}</p>
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-between flex-wrap" onClick={handleClick}>
+            <p className="text-4xl font-bold cursor-pointer ">
+              {translation?.result}
+            </p>
+            <p className="flex items-end">
+              (pron. <i>&quot;{translation?.from.pronunciation}&quot;</i>)
+            </p>
+          </div>
+          <hr className="text-white" />
+          <ul className="flex flex-col py-2">
+            {translation?.examples.map((example, index) => (
+              <code key={index}>* {example}</code>
+            ))}
+          </ul>
+        </>
+      )}
+      <button
+        className="text-gray-200 bg-gray-500 p-2 rounded"
+        onClick={handleRemove}
+      >
+        Excluir
+      </button>
     </div>
   );
 };

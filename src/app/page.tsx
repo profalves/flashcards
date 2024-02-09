@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { Key, useEffect, useState } from "react";
 import useTranslation from "./hooks/useTranslate";
 import InputModal from "./Components/InputModal";
 import FloatingButton from "./Components/FloatingButton";
@@ -7,8 +8,12 @@ import TranslationCard from "./Components/Card";
 
 const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [translations, setTranslations] = useState<T[]>([]);
+  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [inputText, setInputText] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const { translateText, isLoading, error, translation } = useTranslation();
+
+  console.log({ translateText, isLoading, error, translation });
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -20,25 +25,50 @@ const Home: React.FC = () => {
 
   const handleSaveTranslation = async (text: string) => {
     await translateText(text);
-    setTranslations([...translations, translation]);
+    if (error) {
+      setErrorMessage(error);
+      return;
+    }
+    setInputText(text);
     handleCloseModal();
   };
 
-  console.log({ translations });
+  const handleRemoveTranslation = (index: Key | null | undefined) => {
+    const updatedTranslations = [...translations];
+    updatedTranslations.splice(Number(index), 1);
+    setTranslations(updatedTranslations);
+  };
+
+  useEffect(() => {
+    if (translation) {
+      setTranslations((prevTranslations: Translation[]) => [
+        ...prevTranslations,
+        { ...translation, inputText },
+      ]);
+    }
+  }, [inputText, translation]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-3xl font-bold mb-8">Translation App</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {translations.map((infos, index) => (
-          <TranslationCard key={index} translation={infos} />
-        ))}
+      <h1 className="text-3xl font-bold mb-8">FlashCards</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 card-section p-4">
+        {translations
+          .map((infos: any, index: React.Key | null | undefined) => (
+            <TranslationCard
+              key={index}
+              translation={infos}
+              onRemove={() => handleRemoveTranslation(index)}
+            />
+          ))
+          .reverse()}
       </div>
       <FloatingButton onClick={handleOpenModal} />
       <InputModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleSaveTranslation}
+        isLoading={isLoading}
+        errorMessage={errorMessage}
       />
     </div>
   );

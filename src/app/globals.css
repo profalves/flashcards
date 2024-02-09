@@ -29,3 +29,7 @@ body {
 .main-title {
   font-size: 2rem;
 }
+
+.card-section {
+  width: 100%;
+}
