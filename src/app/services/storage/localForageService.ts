@@ -1,5 +1,4 @@
 import localforage from 'localforage';
-import { StorageService } from './storageService';
 
 class LocalForageService implements StorageService {
   async getItem<T>(key: string): Promise<T | null> {
