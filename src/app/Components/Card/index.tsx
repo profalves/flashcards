@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ConfirmationModal from "../ConfirmationModal";
 
 interface CardProps {
   translation: Translation;
@@ -7,13 +8,18 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
   const [isFront, setIsFront] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = () => {
     setIsFront(!isFront);
   };
 
   const handleRemove = () => {
-    onRemove();
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   console.log({ translation });
@@ -51,6 +57,13 @@ const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
       >
         Excluir
       </button>
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={onRemove}
+        message="Deseja realmente excluir este card?"
+      />
     </div>
   );
 };

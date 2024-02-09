@@ -3,7 +3,7 @@ import { useState } from "react";
 const useTranslation = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [translation, setTranslation] = useState("");
+  const [translation, setTranslation] = useState<Translation | any>({});
 
   const translateText = async (text: string) => {
     setIsLoading(true);
