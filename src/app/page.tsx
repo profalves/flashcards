@@ -2,15 +2,11 @@
 
 import React, { Key, useEffect, useState } from "react";
 import useTranslation from "./hooks/useTranslate";
-import { StorageService } from "./services/storage/storageService";
-
 import InputModal from "./Components/InputModal";
 import FloatingButton from "./Components/FloatingButton";
 import TranslationCard from "./Components/Card";
 
-const Home: React.FC<{ storageService: StorageService }> = ({
-  storageService,
-}) => {
+const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [inputText, setInputText] = useState("");
@@ -33,15 +29,6 @@ const Home: React.FC<{ storageService: StorageService }> = ({
       setErrorMessage(error);
       return;
     }
-    const updatedTranslations = [
-      ...translations,
-      { ...translation, inputText },
-    ];
-    try {
-      await storageService.setItem("translations", updatedTranslations);
-    } catch (error) {
-      console.error("Error saving translations to storage:", error);
-    }
     setInputText(text);
     handleCloseModal();
   };
@@ -51,23 +38,6 @@ const Home: React.FC<{ storageService: StorageService }> = ({
     updatedTranslations.splice(Number(index), 1);
     setTranslations(updatedTranslations);
   };
-
-  useEffect(() => {
-    const fetchTranslations = async () => {
-      try {
-        const savedTranslations = await storageService.getItem<Translation[]>(
-          "translations"
-        );
-        if (savedTranslations) {
-          setTranslations(savedTranslations);
-        }
-      } catch (error) {
-        console.error("Error fetching translations from storage:", error);
-      }
-    };
-
-    fetchTranslations();
-  }, [storageService]);
 
   useEffect(() => {
     if (translation) {
