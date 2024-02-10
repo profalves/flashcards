@@ -7,7 +7,7 @@ import FloatingButton from "./Components/FloatingButton";
 import TranslationCard from "./Components/Card";
 import Loading from "./Components/Loading";
 
-const Home: React.FC = () => {
+export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [inputText, setInputText] = useState("");
@@ -89,6 +89,4 @@ const Home: React.FC = () => {
       />
     </div>
   );
-};
-
-export default Home;
+}
