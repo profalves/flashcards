@@ -7,9 +7,7 @@ import FloatingButton from "./Components/FloatingButton";
 import TranslationCard from "./Components/Card";
 import Loading from "./Components/Loading";
 
-const Home: React.FC<{ storageService: StorageService }> = ({
-  storageService,
-}) => {
+const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [inputText, setInputText] = useState("");
@@ -25,7 +23,6 @@ const Home: React.FC<{ storageService: StorageService }> = ({
   };
 
   const handleSaveTranslation = async (text: string) => {
-    console.log({ text });
     await translateText(text);
     if (error) {
       setErrorMessage(error);
@@ -42,6 +39,14 @@ const Home: React.FC<{ storageService: StorageService }> = ({
   };
 
   useEffect(() => {
+    const data = window.localStorage.getItem("translations");
+
+    if (data) {
+      setTranslations(JSON.parse(data));
+    }
+  }, []);
+
+  useEffect(() => {
     if (translation?.result) {
       setTranslations((prevTranslations: Translation[]) => [
         ...prevTranslations,
@@ -52,13 +57,13 @@ const Home: React.FC<{ storageService: StorageService }> = ({
 
   useEffect(() => {
     if (translations.length) {
-      storageService?.setItem("translations", translations);
+      window.localStorage.setItem("translations", JSON.stringify(translations));
     }
-  }, [storageService, translations]);
+  }, [translations]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-3xl font-bold mb-8">FlashCards</h1>
+      <h1 className="text-3xl font-bold mb-8">FlashCards </h1>
       {isLoading ? (
         <Loading />
       ) : (

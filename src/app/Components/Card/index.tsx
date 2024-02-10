@@ -22,8 +22,6 @@ const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
     setIsModalOpen(false);
   };
 
-  console.log({ translation });
-
   return (
     <div className="min-h-40 bg-gray-800 text-white p-4 rounded shadow-md mb-4">
       {isFront ? (
