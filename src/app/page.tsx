@@ -36,6 +36,10 @@ export default function Home() {
     const updatedTranslations = [...translations];
     updatedTranslations.splice(Number(index), 1);
     setTranslations(updatedTranslations);
+    window.localStorage.setItem(
+      "translations",
+      JSON.stringify(updatedTranslations)
+    );
   };
 
   useEffect(() => {
