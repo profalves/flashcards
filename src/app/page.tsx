@@ -67,7 +67,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-3xl font-bold my-8">FlashCards </h1>
+      <h1 className="text-3xl font-bold my-8">FlashCards &#128640;</h1>
       {isLoading ? (
         <Loading />
       ) : (

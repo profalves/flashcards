@@ -53,14 +53,14 @@ const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
         className="text-gray-200 bg-gray-500 p-2 rounded"
         onClick={handleRemove}
       >
-        Excluir
+        &#128465;&#65039;
       </button>
 
       <ConfirmationModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onConfirm={onRemove}
-        message="Deseja realmente excluir este card?"
+        message={`Do you really want to delete this card?: "${translation?.inputText}"`}
       />
     </div>
   );
