@@ -65,9 +65,11 @@ export default function Home() {
     }
   }, [translations]);
 
+  console.log({ translation, error });
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-3xl font-bold mb-8">FlashCards </h1>
+      <h1 className="text-3xl font-bold my-8">FlashCards </h1>
       {isLoading ? (
         <Loading />
       ) : (

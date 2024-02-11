@@ -8,8 +8,9 @@ const useTranslation = () => {
   const translateText = async (text: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/translate?text=${text}`);
+      const response = await fetch(`/api/translate?text=${text.toLowerCase()}`);
       const data = await response.json();
+      console.log({ data });
       setTranslation(data);
     } catch (error) {
       setError("Error translating text");
