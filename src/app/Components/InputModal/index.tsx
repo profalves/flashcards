@@ -28,7 +28,7 @@ const InputModal: React.FC<InputModalProps> = ({
 
   return (
     <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
-      <div className="bg-white p-4 rounded shadow-md">
+      <form className="bg-white p-4 rounded shadow-md" onSubmit={handleSubmit}>
         <input
           type="text"
           value={text}
@@ -55,7 +55,7 @@ const InputModal: React.FC<InputModalProps> = ({
             Cancel
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
