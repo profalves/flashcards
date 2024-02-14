@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# FlashCards App
 
-## Getting Started
+O FlashCards App é uma aplicação web simples para criar e gerenciar cartões de memorização para ajudar no estudo de idiomas.
 
-First, run the development server:
+## Funcionalidades
+
+- Adicionar novos cartões de tradução.
+- Excluir cartões existentes.
+- Traduzir texto usando uma API de tradução.
+- Armazenar as traduções localmente no navegador.
+
+## Tecnologias Utilizadas
+
+- **Next.js**: Biblioteca JavaScript para construção de interfaces de usuário.
+- **Tailwind CSS**: Framework CSS para estilização rápida e responsiva.
+- **TypeScript**: Superset do JavaScript que adiciona tipagem estática ao código.
+- **LocalStorage**: API nativa de armazenamento local para persistência de dados no navegador.
+
+## Instalação
+
+### 1. Clone o repositório:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/seu-usuario/flashcards-app.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Instale as dependências:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd flashcards-app
+npm install # or yarn
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### 3. Execute o aplicativo:
 
-## Learn More
+```bash
+npm run dev #or yarn dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+O aplicativo será iniciado em http://localhost:3000.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Como Usar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+1. Na página inicial, clique no botão flutuante na parte inferior direita para adicionar um novo cartão.
+2. Digite o texto que deseja traduzir no campo de entrada e clique em "Save".
+3. Os cartões de tradução serão exibidos na tela inicial.
+4. Para excluir um cartão, clique no botão "Excluir" no canto inferior esquerdo do cartão.
 
-## Deploy on Vercel
+## Contribuição
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Contribuições são bem-vindas! Sinta-se à vontade para abrir uma issue para relatar um problema ou sugerir uma melhoria. Se preferir, você pode dar um fork e enviar uma pull request com suas alterações.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
