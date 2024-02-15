@@ -32,8 +32,8 @@ export default function Home() {
     handleCloseModal();
   };
 
-  const handleRemoveTranslation = (index: Key | null | undefined) => {
-    const updatedTranslations = [...translations];
+  const handleRemoveTranslation = (index: number) => {
+    const updatedTranslations = translations.filter((_, i) => i !== index);
     updatedTranslations.splice(Number(index), 1);
     setTranslations(updatedTranslations);
     window.localStorage.setItem(
@@ -73,7 +73,7 @@ export default function Home() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 card-section p-4">
           {translations
-            .map((infos: any, index: React.Key | null | undefined) => (
+            .map((infos, index) => (
               <TranslationCard
                 key={index}
                 translation={infos}

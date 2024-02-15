@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { SyntheticEvent, useState } from "react";
 
 interface InputModalProps {
   isOpen: boolean;
@@ -18,10 +18,10 @@ const InputModal: React.FC<InputModalProps> = ({
 }) => {
   const [text, setText] = useState("");
 
-  const handleSubmit = () => {
+  const handleSubmit = (event: SyntheticEvent) => {
+    event.preventDefault();
     onSubmit(text);
     setText("");
-    onClose();
   };
 
   if (!isOpen) return null;
