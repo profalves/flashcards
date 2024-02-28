@@ -25,11 +25,11 @@ export default function Home() {
   const handleSaveTranslation = async (text: string) => {
     await translateText(text);
     if (error) {
+      handleOpenModal();
       setErrorMessage(error);
       return;
     }
     setInputText(text);
-    handleCloseModal();
   };
 
   const handleRemoveTranslation = (index: number) => {

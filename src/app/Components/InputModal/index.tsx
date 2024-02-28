@@ -22,6 +22,7 @@ const InputModal: React.FC<InputModalProps> = ({
     event.preventDefault();
     onSubmit(text);
     setText("");
+    onClose();
   };
 
   if (!isOpen) return null;
