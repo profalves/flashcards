@@ -23,14 +23,27 @@ export default function Home() {
   };
 
   const handleSaveTranslation = async (text: string) => {
-    await translateText(text);
-    if (error) {
-      handleOpenModal();
-      setErrorMessage(error);
+    if (hasDuplicateTranslation(text)) {
+      setErrorMessage("This text already exists");
       return;
     }
-    setInputText(text);
+
+    setErrorMessage("");
+    handleCloseModal();
+
+    try {
+      await translateText(text);
+    } catch (error) {
+      handleOpenModal();
+      setErrorMessage("Error translating text: " + error);
+      return;
+    } finally {
+      setInputText(text);
+    }
   };
+
+  const hasDuplicateTranslation = (inputText: string) =>
+    translations.some((translation) => translation.inputText === inputText);
 
   const handleRemoveTranslation = (index: number) => {
     const updatedTranslations = translations.filter((_, i) => i !== index);

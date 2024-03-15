@@ -22,7 +22,6 @@ const InputModal: React.FC<InputModalProps> = ({
     event.preventDefault();
     onSubmit(text);
     setText("");
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -38,8 +37,8 @@ const InputModal: React.FC<InputModalProps> = ({
           placeholder="Digite aqui..."
           {...rest}
         />
+        <div className="text-red-700 m-2">{errorMessage}</div>
         <div className="flex justify-end">
-          <span className="text-red-700 mr-2">{errorMessage}</span>
           <button
             onClick={handleSubmit}
             className={`px-4 py-2 ${
