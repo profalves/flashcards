@@ -19,6 +19,7 @@ export default function Home() {
   };
 
   const handleCloseModal = () => {
+    setErrorMessage("");
     setIsModalOpen(false);
   };
 
@@ -30,7 +31,6 @@ export default function Home() {
     }
 
     if (!text) {
-      handleOpenModal();
       setErrorMessage("Please enter a text");
       return;
     }
