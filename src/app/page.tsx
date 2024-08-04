@@ -1,18 +1,18 @@
 "use client";
 
-import React, { Key, useEffect, useState } from "react";
-import useTranslation from "./hooks/useTranslate";
-import InputModal from "./Components/InputModal";
-import FloatingButton from "./Components/FloatingButton";
+import { useEffect, useState } from "react";
 import TranslationCard from "./Components/Card";
+import FloatingButton from "./Components/FloatingButton";
+import InputModal from "./Components/InputModal";
 import Loading from "./Components/Loading";
+import useTranslation from "./hooks/useTranslate";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [inputText, setInputText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { translateText, isLoading, error, translation } = useTranslation();
+  const { translateText, isLoading, translation } = useTranslation();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -24,7 +24,14 @@ export default function Home() {
 
   const handleSaveTranslation = async (text: string) => {
     if (hasDuplicateTranslation(text)) {
+      handleOpenModal();
       setErrorMessage("This text already exists");
+      return;
+    }
+
+    if (!text) {
+      handleOpenModal();
+      setErrorMessage("Please enter a text");
       return;
     }
 
