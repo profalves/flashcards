@@ -1,5 +1,7 @@
 "use client";
 
+import { TranslationService } from "@/pages/api/translation";
+import { Translation } from "@/pages/api/translation/types";
 import { useEffect, useState } from "react";
 import TranslationCard from "./Components/Card";
 import FloatingButton from "./Components/FloatingButton";
@@ -12,7 +14,10 @@ export default function Home() {
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [inputText, setInputText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { translateText, isLoading, translation } = useTranslation();
+
+  const translationService = new TranslationService();
+  const { translateText, isLoading, translation } =
+    useTranslation(translationService);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -39,13 +44,14 @@ export default function Home() {
     handleCloseModal();
 
     try {
-      await translateText(text);
+      await translateText(text, "eng", "pt");
     } catch (error) {
       handleOpenModal();
       setErrorMessage("Error translating text: " + error);
       return;
     } finally {
       setInputText(text);
+      console.log({ translation });
     }
   };
 
@@ -71,7 +77,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (translation?.result) {
+    if (translation) {
       setTranslations((prevTranslations: Translation[]) => [
         ...prevTranslations,
         { ...translation, inputText },

@@ -1,3 +1,4 @@
+import { Translation } from "@/pages/api/translation/types";
 import { useState } from "react";
 import ConfirmationModal from "../ConfirmationModal";
 
