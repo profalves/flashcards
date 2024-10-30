@@ -1,6 +1,6 @@
 {
-  "name": "pwa-using-next13",
-  "version": "0.1.0",
+  "name": "flashcards",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

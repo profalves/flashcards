@@ -28,13 +28,17 @@ git clone https://github.com/seu-usuario/flashcards-app.git
 
 ```bash
 cd flashcards-app
-npm install # or yarn
+yarn
+# or yarn install
+# or npm install
+# or npm i
 ```
 
 ### 3. Execute o aplicativo:
 
 ```bash
-npm run dev #or yarn dev
+yarn dev
+#or npm run dev
 ```
 
 O aplicativo será iniciado em http://localhost:3000.
@@ -49,4 +53,3 @@ O aplicativo será iniciado em http://localhost:3000.
 ## Contribuição
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir uma issue para relatar um problema ou sugerir uma melhoria. Se preferir, você pode dar um fork e enviar uma pull request com suas alterações.
-

@@ -47,7 +47,10 @@ const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
           <hr className="text-white" />
           <ul className="flex flex-col py-2">
             {translation?.examples?.map((example, index) => (
-              <code key={index}>* {example}</code>
+              <div
+                key={index}
+                dangerouslySetInnerHTML={{ __html: `* ${example}` }}
+              />
             ))}
           </ul>
         </section>
