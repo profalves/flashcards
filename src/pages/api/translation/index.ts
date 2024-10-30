@@ -67,8 +67,7 @@ export class TranslationService implements ITranslationService {
         result,
       };
     } catch (error) {
-      console.error("Error during translation:", error);
-      throw new Error("Failed to translate text.");
+      throw new Error(`Failed to translate text: ${JSON.stringify(error)}`);
     }
   }
 }

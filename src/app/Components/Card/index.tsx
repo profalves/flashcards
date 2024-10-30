@@ -38,9 +38,11 @@ const Card: React.FC<CardProps> = ({ translation, onRemove }) => {
             <p className="text-4xl font-bold cursor-pointer ">
               {translation?.result}
             </p>
-            <p className="flex items-end">
-              (pronun. <i>&quot;{translation?.from?.pronunciation}&quot;</i>)
-            </p>
+            {translation?.from?.pronunciation && (
+              <p className="flex items-end">
+                (pronun. <i>&quot;{translation?.from?.pronunciation}&quot;</i>)
+              </p>
+            )}
           </div>
           <hr className="text-white" />
           <ul className="flex flex-col py-2">

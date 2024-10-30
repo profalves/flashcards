@@ -1,7 +1,6 @@
 import {
   ITranslationService,
   Translation,
-  TranslationResponse,
 } from "@/pages/api/translation/types";
 import { converter } from "@/utils/converters/translationConverter";
 import { useState } from "react";
@@ -22,19 +21,14 @@ export default function useTranslation(service: ITranslationService) {
    * @param {string} to - The target language code.
    */
 
-  const translateText = async (text: string, from: string, to: string) => {
+  const translateText = async (text: string, from?: string, to?: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await service.translate(text, from, to);
 
-      const translationResponse: TranslationResponse = JSON.parse(
-        response.result
-      );
-
-      console.log({ response, translationResponse });
-      const translation = converter(translationResponse, text);
+      const translation = converter(response.result, text);
 
       setTranslation(translation);
     } catch (err) {

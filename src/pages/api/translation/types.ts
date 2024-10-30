@@ -10,7 +10,7 @@ export type ITranslationService = {
 
 export type TranslationServiceResult = {
   inputText: string;
-  result: string;
+  result: TranslationResponse;
 };
 
 export type TranslationResponse = {

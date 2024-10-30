@@ -44,14 +44,13 @@ export default function Home() {
     handleCloseModal();
 
     try {
-      await translateText(text, "eng", "pt");
+      await translateText(text);
     } catch (error) {
       handleOpenModal();
       setErrorMessage("Error translating text: " + error);
       return;
     } finally {
       setInputText(text);
-      console.log({ translation });
     }
   };
 
