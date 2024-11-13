@@ -1,7 +1,5 @@
 "use client";
 
-import { TranslationService } from "@/pages/api/translation";
-import { Translation } from "@/pages/api/translation/types";
 import { useEffect, useState } from "react";
 import TranslationCard from "./Components/Card";
 import FloatingButton from "./Components/FloatingButton";
@@ -15,9 +13,7 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const translationService = new TranslationService();
-  const { translateText, isLoading, translation } =
-    useTranslation(translationService);
+  const { translateText, isLoading, translation } = useTranslation();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);

@@ -1,7 +1,4 @@
-import {
-  Translation,
-  TranslationResponse,
-} from "@/pages/api/translation/types";
+import { TranslationResponse } from "@/pages/api/translation/types";
 
 /**
  * Converts the raw API response data into the expected Translation format.
