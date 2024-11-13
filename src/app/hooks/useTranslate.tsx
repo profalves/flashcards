@@ -1,38 +1,26 @@
-import {
-  ITranslationService,
-  Translation,
-} from "@/pages/api/translation/types";
-import { converter } from "@/utils/converters/translationConverter";
 import { useState } from "react";
 
-/**
- * Hook that manages text translation using a provided translation service.
- * @param {ITranslationService} service - The translation service implementing ITranslationService interface.
- */
-export default function useTranslation(service: ITranslationService) {
+export default function useTranslation() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [translation, setTranslation] = useState<Translation | null>(null);
 
-  /**
-   * Function that requests text translation using the injected translation service.
-   * @param {string} text - The text to be translated.
-   * @param {string} from - The source language code.
-   * @param {string} to - The target language code.
-   */
-
-  const translateText = async (text: string, from?: string, to?: string) => {
+  const translateText = async (input: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await service.translate(text, from, to);
-
-      const translation = converter(response.result, text);
-
-      setTranslation(translation);
-    } catch (err) {
-      setError("Error translating text.");
+      const response = await fetch(`/api/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input }),
+      });
+      const data = await response.json();
+      console.log({ data });
+      const result = converter(data);
+      setTranslation(result);
+    } catch (error) {
+      setError("Error translating text");
     } finally {
       setIsLoading(false);
     }
@@ -40,3 +28,14 @@ export default function useTranslation(service: ITranslationService) {
 
   return { translateText, isLoading, error, translation };
 }
+
+const converter = (data: TranslationResponse): Translation => {
+  return {
+    inputText: data.input[0],
+    result: data.translation[0],
+    from: {
+      pronunciation: null,
+    },
+    examples: data.contextResults.results[0].sourceExamples,
+  };
+};

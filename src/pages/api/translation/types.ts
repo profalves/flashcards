@@ -44,15 +44,6 @@ type TranslationResults = {
   sourceExamples: string[];
 };
 
-export type Translation = {
-  result: string;
-  examples: string[];
-  inputText: string;
-  from?: {
-    pronunciation: string;
-  };
-};
-
 // {
 //   "id": "2c353df1-5a01-4d9a-9add-75d35d00ba67",
 //   "from": "eng",
