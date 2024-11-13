@@ -5,12 +5,18 @@ const useTranslation = () => {
   const [error, setError] = useState<string | null>(null);
   const [translation, setTranslation] = useState<Translation | any>({});
 
-  const translateText = async (text: string) => {
+  const translateText = async (input: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/translate?text=${text.toLowerCase()}`);
+      const response = await fetch(`/api/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input }),
+      });
       const data = await response.json();
-      setTranslation(data);
+      console.log({ data });
+      const result = converter(data);
+      setTranslation(result);
     } catch (error) {
       setError("Error translating text");
     } finally {
@@ -22,3 +28,14 @@ const useTranslation = () => {
 };
 
 export default useTranslation;
+
+const converter = (data: TranslationResponse): Translation => {
+  return {
+    inputText: data.input[0],
+    result: data.translation[0],
+    from: {
+      pronunciation: null,
+    },
+    examples: data.contextResults.results[0].sourceExamples,
+  };
+};
