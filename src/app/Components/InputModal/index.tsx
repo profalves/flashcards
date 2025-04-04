@@ -18,6 +18,8 @@ const InputModal: React.FC<InputModalProps> = ({
 }) => {
   const [text, setText] = useState("");
 
+  const isSaveButtonDisabled = !text.trim() || isLoading;
+
   const handleSubmit = (event: SyntheticEvent) => {
     event.preventDefault();
     onSubmit(text);
@@ -42,9 +44,9 @@ const InputModal: React.FC<InputModalProps> = ({
           <button
             onClick={handleSubmit}
             className={`px-4 py-2 ${
-              !text || isLoading ? `bg-gray-300 text-gray-700` : `bg-blue-500 text-white`
+              isSaveButtonDisabled ? `bg-gray-300 text-gray-700` : `bg-blue-500 text-white`
             }  rounded`}
-            disabled={!text || isLoading}
+            disabled={isSaveButtonDisabled}
           >
             Save
           </button>
