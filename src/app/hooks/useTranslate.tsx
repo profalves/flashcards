@@ -1,11 +1,13 @@
+import { converter } from "@/utils/converters/translationConverter";
 import { useState } from "react";
+import { text } from "stream/consumers";
 
 export default function useTranslation() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [translation, setTranslation] = useState<Translation | null>(null);
 
-  const translateText = async (input: string) => {
+  const translateText = async (text: string) => {
     setIsLoading(true);
     setError(null);
 
@@ -13,11 +15,10 @@ export default function useTranslation() {
       const response = await fetch(`/api/translate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input }),
+        body: JSON.stringify({ text }),
       });
       const data = await response.json();
-      console.log({ data });
-      const result = converter(data);
+      const result = converter(data, text);
       setTranslation(result);
     } catch (error) {
       setError("Error translating text");
@@ -28,14 +29,3 @@ export default function useTranslation() {
 
   return { translateText, isLoading, error, translation };
 }
-
-const converter = (data: TranslationResponse): Translation => {
-  return {
-    inputText: data.input[0],
-    result: data.translation[0],
-    from: {
-      pronunciation: null,
-    },
-    examples: data.contextResults.results[0].sourceExamples,
-  };
-};
