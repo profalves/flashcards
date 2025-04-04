@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TranslationCard from "./Components/Card";
 import FloatingButton from "./Components/FloatingButton";
 import InputModal from "./Components/InputModal";
@@ -28,6 +28,7 @@ export default function Home() {
     if (hasDuplicateTranslation(text)) {
       handleOpenModal();
       setErrorMessage("This text already exists");
+      searchTranslation(text);
       return;
     }
 
@@ -47,6 +48,16 @@ export default function Home() {
       return;
     } finally {
       setInputText(text);
+    }
+  };
+
+  const searchTranslation = (searchText: string) => {
+    const foundTranslation = translations.findIndex(
+      (translation) => translation.inputText.toLowerCase() === searchText.toLowerCase()
+    );
+    if (foundTranslation !== -1) {
+      const element = document.querySelector(`.card-section > div:nth-child(${translations.length - foundTranslation})`);
+      element?.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
