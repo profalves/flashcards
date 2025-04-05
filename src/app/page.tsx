@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import TranslationCard from "./Components/Card";
-import FloatingButton from "./Components/FloatingButton";
-import InputModal from "./Components/InputModal";
-import Loading from "./Components/Loading";
+import { useEffect, useState } from "react";
+
+import TranslationCard from "./components/Card";
+import FloatingButton from "./components/FloatingButton";
+import InputModal from "./components/InputModal";
+import Loading from "./components/Loading";
+import MainContainer from "./components/MainContainer";
+
+import useHealthCheck from "./hooks/useHealthCheck";
 import useTranslation from "./hooks/useTranslate";
 
 export default function Home() {
@@ -14,6 +18,11 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const { translateText, isLoading, translation } = useTranslation();
+
+  const { loading: isHealthCheckLoading, error: healthCheckError } =
+    useHealthCheck();
+
+  const isLoadingState = isLoading || isHealthCheckLoading;
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -53,11 +62,16 @@ export default function Home() {
 
   const searchTranslation = (searchText: string) => {
     const foundTranslation = translations.findIndex(
-      (translation) => translation.inputText.toLowerCase() === searchText.toLowerCase()
+      (translation) =>
+        translation.inputText.toLowerCase() === searchText.toLowerCase()
     );
     if (foundTranslation !== -1) {
-      const element = document.querySelector(`.card-section > div:nth-child(${translations.length - foundTranslation})`);
-      element?.scrollIntoView({ behavior: 'smooth' });
+      const element = document.querySelector(
+        `.card-section > div:nth-child(${
+          translations.length - foundTranslation
+        })`
+      );
+      element?.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -97,10 +111,20 @@ export default function Home() {
     }
   }, [translations]);
 
+  if (healthCheckError) {
+    return (
+      <MainContainer>
+        <h1 className="text-3xl font-bold my-8 text-center mx-4">
+          ⚠️ {healthCheckError} 
+        </h1>
+      </MainContainer>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-3xl font-bold my-8">FlashCards &#128640;</h1>
-      {isLoading ? (
+    <MainContainer>
+      <h1 className="text-3xl font-bold my-8">🚀 FlashCards</h1>
+      {isLoadingState ? (
         <Loading />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 card-section p-4">
@@ -123,6 +147,6 @@ export default function Home() {
         isLoading={isLoading}
         errorMessage={errorMessage}
       />
-    </div>
+    </MainContainer>
   );
 }
