@@ -78,9 +78,10 @@ export default function Home() {
   const hasDuplicateTranslation = (inputText: string) =>
     translations.some((translation) => translation.inputText === inputText);
 
-  const handleRemoveTranslation = (index: number) => {
-    const updatedTranslations = translations.filter((_, i) => i !== index);
-    updatedTranslations.splice(Number(index), 1);
+  const handleRemoveTranslation = (infos: Translation) => {
+    const updatedTranslations = translations.filter(
+      (card) => infos.inputText !== card.inputText
+    );
     setTranslations(updatedTranslations);
     window.localStorage.setItem(
       "translations",
@@ -133,7 +134,7 @@ export default function Home() {
               <TranslationCard
                 key={index}
                 translation={infos}
-                onRemove={() => handleRemoveTranslation(index)}
+                onRemove={() => handleRemoveTranslation(infos)}
               />
             ))
             .reverse()}
