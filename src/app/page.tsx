@@ -17,7 +17,7 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const { translateText, isLoading, translation } = useTranslation();
+  const { translateText, isLoading, translation, error } = useTranslation();
 
   const { loading: isHealthCheckLoading, error: healthCheckError } =
     useHealthCheck();
@@ -53,6 +53,11 @@ export default function Home() {
       await translateText(text);
     } catch (error) {
       handleOpenModal();
+      if (error) {
+        handleOpenModal();
+        setErrorMessage(error.toString());
+        return;
+      }
       setErrorMessage("Error translating text: " + error);
       return;
     } finally {
@@ -116,7 +121,7 @@ export default function Home() {
     return (
       <MainContainer>
         <h1 className="text-3xl font-bold my-8 text-center mx-4">
-          ⚠️ {healthCheckError} 
+          ⚠️ {healthCheckError}
         </h1>
       </MainContainer>
     );
@@ -124,7 +129,7 @@ export default function Home() {
 
   return (
     <MainContainer>
-      <h1 className="text-3xl font-bold my-8">🚀 FlashCards</h1>
+      <h1 className="text-3xl font-bold my-8">🇺🇸 FlashCards 🇬🇧</h1>
       {isLoadingState ? (
         <Loading />
       ) : (
