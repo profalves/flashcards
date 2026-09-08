@@ -18,6 +18,8 @@ interface TranslateResult {
   statusCode?: number;
 }
 
+const translationCache = new Map<string, TranslateResponse>();
+
 export function validateTranslateInput(text: unknown): {
   valid: boolean;
   error?: string;
@@ -76,6 +78,20 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
     };
   }
 
+  const cacheKey = text.toLowerCase().trim();
+  const cachedResult = translationCache.get(cacheKey);
+  
+  if (cachedResult) {
+    logger.info("Translation found in cache", { 
+      textLength: text.length,
+      cacheHit: true,
+    });
+    return {
+      success: true,
+      data: cachedResult,
+    };
+  }
+
   try {
     logger.info("Starting translation", { 
       endpoint: `${ENDPOINT}/translate`,
@@ -110,8 +126,11 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
 
     const data = await response.json();
 
+    translationCache.set(cacheKey, data);
+
     logger.success("Translation completed successfully", {
       textLength: text.length,
+      cached: false,
     });
 
     return {
