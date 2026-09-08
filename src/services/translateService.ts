@@ -1,14 +1,21 @@
 import { logger } from "./logger";
 import { PRELOADED_TRANSLATIONS } from "./preloadedTranslations";
 
-const ENDPOINT = process.env.NEXT_PUBLIC_API_URL;
-const FETCH_TIMEOUT = 30000;
+const LINGVA_ENDPOINT = "https://lingva.ml/api/v1";
+const FETCH_TIMEOUT = 15000;
+const SOURCE_LANG = "en";
+const TARGET_LANG = "pt";
 
 interface TranslateRequest {
   text: string;
 }
 
+interface LingvaResponse {
+  translation: string;
+}
+
 interface TranslateResponse {
+  translation: string;
   [key: string]: any;
 }
 
@@ -46,19 +53,31 @@ export function validateTranslateInput(text: unknown): {
   return { valid: true };
 }
 
-export function validateConfig(): {
-  valid: boolean;
-  error?: string;
-} {
-  if (!ENDPOINT) {
-    logger.error("NEXT_PUBLIC_API_URL not configured");
-    return {
-      valid: false,
-      error: "Server configuration is invalid.",
-    };
-  }
+async function fetchFromLingva(text: string): Promise<LingvaResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-  return { valid: true };
+  try {
+    const url = `${LINGVA_ENDPOINT}/translate?source=${SOURCE_LANG}&target=${TARGET_LANG}&text=${encodeURIComponent(text)}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      logger.error("Error from Lingva API", {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      throw new Error(`Lingva API returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }
 
 export async function translate(request: TranslateRequest): Promise<TranslateResult> {
@@ -74,20 +93,11 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
     };
   }
 
-  const configValidation = validateConfig();
-  if (!configValidation.valid) {
-    return {
-      success: false,
-      error: configValidation.error,
-      statusCode: 500,
-    };
-  }
-
   const cacheKey = text.toLowerCase().trim();
   const cachedResult = translationCache.get(cacheKey);
-  
+
   if (cachedResult) {
-    logger.info("Translation found in cache", { 
+    logger.info("Translation found in cache", {
       textLength: text.length,
       cacheHit: true,
     });
@@ -98,61 +108,46 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
   }
 
   try {
-    logger.info("Starting translation", { 
-      endpoint: `${ENDPOINT}/translate`,
+    logger.info("Starting translation", {
+      endpoint: LINGVA_ENDPOINT,
       textLength: text.length,
       preview: text.substring(0, 50),
+      source: SOURCE_LANG,
+      target: TARGET_LANG,
     });
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+    const lingvaResponse = await fetchFromLingva(text);
 
-    const response = await fetch(`${ENDPOINT}/translate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-      signal: controller.signal,
-    });
+    const translationData: TranslateResponse = {
+      translation: lingvaResponse.translation,
+      source: SOURCE_LANG,
+      target: TARGET_LANG,
+      provider: "Lingva",
+    };
 
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      logger.error("Error from external API", {
-        status: response.status,
-        statusText: response.statusText,
-      });
-
-      return {
-        success: false,
-        error: `External API returned error: ${response.status}`,
-        statusCode: response.status,
-      };
-    }
-
-    const data = await response.json();
-
-    translationCache.set(cacheKey, data);
+    translationCache.set(cacheKey, translationData);
 
     logger.success("Translation completed successfully", {
       textLength: text.length,
+      translation: lingvaResponse.translation.substring(0, 50),
       cached: false,
     });
 
     return {
       success: true,
-      data,
+      data: translationData,
     };
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === "AbortError") {
         logger.error("Request timeout", {
           timeout: FETCH_TIMEOUT,
-          message: `External API is too slow (>${FETCH_TIMEOUT}ms)`,
+          message: `Lingva API is too slow (>${FETCH_TIMEOUT}ms)`,
         });
 
         return {
           success: false,
-          error: `Request timeout. External API is too slow (>${FETCH_TIMEOUT}ms)`,
+          error: `Request timeout. Translation service is too slow (>${FETCH_TIMEOUT}ms)`,
           statusCode: 504,
         };
       }
