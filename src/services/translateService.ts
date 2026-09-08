@@ -1,4 +1,5 @@
 import { logger } from "./logger";
+import { PRELOADED_TRANSLATIONS } from "./preloadedTranslations";
 
 const ENDPOINT = process.env.NEXT_PUBLIC_API_URL;
 const FETCH_TIMEOUT = 30000;
@@ -19,6 +20,10 @@ interface TranslateResult {
 }
 
 const translationCache = new Map<string, TranslateResponse>();
+
+for (const [key, value] of Object.entries(PRELOADED_TRANSLATIONS)) {
+  translationCache.set(key.toLowerCase(), value);
+}
 
 export function validateTranslateInput(text: unknown): {
   valid: boolean;
