@@ -1,17 +1,10 @@
 import { logger } from "./logger";
 import { PRELOADED_TRANSLATIONS } from "./preloadedTranslations";
 
-const LINGVA_ENDPOINT = "https://lingva.ml/api/v1";
-const FETCH_TIMEOUT = 15000;
-const SOURCE_LANG = "en";
-const TARGET_LANG = "pt";
+const FETCH_TIMEOUT = 8000;
 
 interface TranslateRequest {
   text: string;
-}
-
-interface LingvaResponse {
-  translation: string;
 }
 
 interface TranslateResponse {
@@ -53,30 +46,44 @@ export function validateTranslateInput(text: unknown): {
   return { valid: true };
 }
 
-async function fetchFromLingva(text: string): Promise<LingvaResponse> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-
+async function fetchTranslation(text: string): Promise<string | null> {
   try {
-    const url = `${LINGVA_ENDPOINT}/translate?source=${SOURCE_LANG}&target=${TARGET_LANG}&text=${encodeURIComponent(text)}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-    const response = await fetch(url, {
-      method: "GET",
+    const response = await fetch("https://translate-api.goog/translate_a/single", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `client=gtx&sl=en&tl=pt&dt=t&q=${encodeURIComponent(text)}`,
       signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      logger.error("Error from Lingva API", {
-        status: response.status,
-        statusText: response.statusText,
-      });
-      throw new Error(`Lingva API returned ${response.status}`);
+      logger.error("Translation API returned error", { status: response.status });
+      return null;
     }
 
-    const data = await response.json();
-    return data;
-  } finally {
-    clearTimeout(timeoutId);
+    const result = await response.json();
+    if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
+      const translation = result[0]
+        .map((item: any[]) => item[0])
+        .join("");
+      return translation;
+    }
+
+    return null;
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.debug("Translation fetch error", {
+        errorName: error.name,
+        message: error.message.substring(0, 100),
+      });
+    }
+    return null;
   }
 }
 
@@ -100,6 +107,7 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
     logger.info("Translation found in cache", {
       textLength: text.length,
       cacheHit: true,
+      translation: cachedResult.translation.substring(0, 50),
     });
     return {
       success: true,
@@ -108,29 +116,36 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
   }
 
   try {
-    logger.info("Starting translation", {
-      endpoint: LINGVA_ENDPOINT,
+    logger.info("Starting translation (cache miss)", {
       textLength: text.length,
       preview: text.substring(0, 50),
-      source: SOURCE_LANG,
-      target: TARGET_LANG,
     });
 
-    const lingvaResponse = await fetchFromLingva(text);
+    const translation = await fetchTranslation(text);
+
+    if (!translation) {
+      logger.warn("Translation API returned empty result", {
+        text: text.substring(0, 50),
+      });
+      return {
+        success: false,
+        error: "Could not translate text. Please try a simpler word.",
+        statusCode: 503,
+      };
+    }
 
     const translationData: TranslateResponse = {
-      translation: lingvaResponse.translation,
-      source: SOURCE_LANG,
-      target: TARGET_LANG,
-      provider: "Lingva",
+      translation,
+      source: "en",
+      target: "pt",
+      provider: "Google Translate",
     };
 
     translationCache.set(cacheKey, translationData);
 
     logger.success("Translation completed successfully", {
       textLength: text.length,
-      translation: lingvaResponse.translation.substring(0, 50),
-      cached: false,
+      translation: translation.substring(0, 50),
     });
 
     return {
@@ -142,29 +157,23 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
       if (error.name === "AbortError") {
         logger.error("Request timeout", {
           timeout: FETCH_TIMEOUT,
-          message: `Lingva API is too slow (>${FETCH_TIMEOUT}ms)`,
+          message: "Translation service is too slow",
         });
 
         return {
           success: false,
-          error: `Request timeout. Translation service is too slow (>${FETCH_TIMEOUT}ms)`,
+          error: "Translation request timed out. Please try another word or contact support.",
           statusCode: 504,
         };
       }
 
       logger.error("Error processing translation", {
         errorName: error.name,
-        errorMessage: error.message,
+        errorMessage: error.message.substring(0, 100),
       });
-
-      return {
-        success: false,
-        error: `Error processing translation: ${error.message}`,
-        statusCode: 500,
-      };
     }
 
-    logger.error("Unknown error processing translation", { error });
+    logger.error("Unknown error processing translation");
     return {
       success: false,
       error: "Unknown error while processing translation.",
