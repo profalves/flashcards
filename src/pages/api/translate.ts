@@ -6,7 +6,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Validação de método HTTP
   if (req.method !== "POST") {
     logger.warn("Método HTTP não permitido", { method: req.method });
     return res.status(405).json({ error: "Método não permitido. Use POST." });
@@ -18,7 +17,6 @@ export default async function handler(
     textLength: text?.length || 0 
   });
 
-  // Chamar serviço de tradução
   const result = await translate({ text });
 
   if (!result.success) {
@@ -30,6 +28,5 @@ export default async function handler(
     return res.status(statusCode).json({ error: result.error });
   }
 
-  // Sucesso
   return res.status(200).json(result.data);
 }

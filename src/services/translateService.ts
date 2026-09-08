@@ -1,11 +1,7 @@
-/**
- * Serviço para comunicação com a API externa de tradução
- */
-
 import { logger } from "./logger";
 
 const ENDPOINT = process.env.NEXT_PUBLIC_API_URL;
-const FETCH_TIMEOUT = 5000; // 5 segundos
+const FETCH_TIMEOUT = 5000;
 
 interface TranslateRequest {
   text: string;
@@ -22,9 +18,6 @@ interface TranslateResult {
   statusCode?: number;
 }
 
-/**
- * Valida o texto antes de enviar para a API
- */
 export function validateTranslateInput(text: unknown): {
   valid: boolean;
   error?: string;
@@ -46,9 +39,6 @@ export function validateTranslateInput(text: unknown): {
   return { valid: true };
 }
 
-/**
- * Verifica configurações necessárias
- */
 export function validateConfig(): {
   valid: boolean;
   error?: string;
@@ -64,13 +54,9 @@ export function validateConfig(): {
   return { valid: true };
 }
 
-/**
- * Realiza a requisição de tradução para a API externa
- */
 export async function translate(request: TranslateRequest): Promise<TranslateResult> {
   const { text } = request;
 
-  // Validar input
   const validation = validateTranslateInput(text);
   if (!validation.valid) {
     logger.warn("Entrada inválida para tradução", { error: validation.error });
@@ -81,7 +67,6 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
     };
   }
 
-  // Validar config
   const configValidation = validateConfig();
   if (!configValidation.valid) {
     return {
@@ -98,7 +83,6 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
       preview: text.substring(0, 50),
     });
 
-    // Criar AbortController para timeout
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
@@ -135,7 +119,6 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
       data,
     };
   } catch (error) {
-    // Tratamento específico de erros
     if (error instanceof Error) {
       if (error.name === "AbortError") {
         logger.error("⏱️ Timeout na requisição", {
