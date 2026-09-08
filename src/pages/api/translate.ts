@@ -7,13 +7,13 @@ export default async function handler(
   res: NextApiResponse
 ) {
   if (req.method !== "POST") {
-    logger.warn("Método HTTP não permitido", { method: req.method });
-    return res.status(405).json({ error: "Método não permitido. Use POST." });
+    logger.warn("HTTP method not allowed", { method: req.method });
+    return res.status(405).json({ error: "Method not allowed. Use POST." });
   }
 
   const { text } = req.body;
 
-  logger.info("Requisição de tradução recebida", { 
+  logger.info("Translation request received", { 
     textLength: text?.length || 0 
   });
 
@@ -21,7 +21,7 @@ export default async function handler(
 
   if (!result.success) {
     const statusCode = result.statusCode || 500;
-    logger.warn("Falha na tradução", { 
+    logger.warn("Translation failed", { 
       error: result.error,
       statusCode 
     });

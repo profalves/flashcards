@@ -25,14 +25,14 @@ export function validateTranslateInput(text: unknown): {
   if (!text || typeof text !== "string") {
     return {
       valid: false,
-      error: "Campo 'text' é obrigatório e deve ser uma string.",
+      error: "Field 'text' is required and must be a string.",
     };
   }
 
   if (text.trim().length === 0) {
     return {
       valid: false,
-      error: "O texto não pode estar vazio.",
+      error: "Text cannot be empty.",
     };
   }
 
@@ -44,10 +44,10 @@ export function validateConfig(): {
   error?: string;
 } {
   if (!ENDPOINT) {
-    logger.error("NEXT_PUBLIC_API_URL não configurada");
+    logger.error("NEXT_PUBLIC_API_URL not configured");
     return {
       valid: false,
-      error: "Configuração do servidor inválida.",
+      error: "Server configuration is invalid.",
     };
   }
 
@@ -59,7 +59,7 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
 
   const validation = validateTranslateInput(text);
   if (!validation.valid) {
-    logger.warn("Entrada inválida para tradução", { error: validation.error });
+    logger.warn("Invalid input for translation", { error: validation.error });
     return {
       success: false,
       error: validation.error,
@@ -77,7 +77,7 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
   }
 
   try {
-    logger.info("📤 Iniciando tradução", { 
+    logger.info("Starting translation", { 
       endpoint: `${ENDPOINT}/translate`,
       textLength: text.length,
       preview: text.substring(0, 50),
@@ -96,21 +96,21 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      logger.error("Erro na resposta da API externa", {
+      logger.error("Error from external API", {
         status: response.status,
         statusText: response.statusText,
       });
 
       return {
         success: false,
-        error: `API externa retornou erro: ${response.status}`,
+        error: `External API returned error: ${response.status}`,
         statusCode: response.status,
       };
     }
 
     const data = await response.json();
 
-    logger.success("✅ Tradução realizada com sucesso", {
+    logger.success("Translation completed successfully", {
       textLength: text.length,
     });
 
@@ -121,34 +121,34 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === "AbortError") {
-        logger.error("⏱️ Timeout na requisição", {
+        logger.error("Request timeout", {
           timeout: FETCH_TIMEOUT,
-          message: `A API externa está muito lenta (>${FETCH_TIMEOUT}ms)`,
+          message: `External API is too slow (>${FETCH_TIMEOUT}ms)`,
         });
 
         return {
           success: false,
-          error: `Timeout na requisição. A API externa está muito lenta (>${FETCH_TIMEOUT}ms)`,
+          error: `Request timeout. External API is too slow (>${FETCH_TIMEOUT}ms)`,
           statusCode: 504,
         };
       }
 
-      logger.error("Erro ao processar tradução", {
+      logger.error("Error processing translation", {
         errorName: error.name,
         errorMessage: error.message,
       });
 
       return {
         success: false,
-        error: `Erro ao processar tradução: ${error.message}`,
+        error: `Error processing translation: ${error.message}`,
         statusCode: 500,
       };
     }
 
-    logger.error("Erro desconhecido ao processar tradução", { error });
+    logger.error("Unknown error processing translation", { error });
     return {
       success: false,
-      error: "Erro desconhecido ao processar a tradução.",
+      error: "Unknown error while processing translation.",
       statusCode: 500,
     };
   }
