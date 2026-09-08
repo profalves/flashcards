@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "src/pages/api/translate.ts": {
+      "maxDuration": 60
+    }
+  }
+}

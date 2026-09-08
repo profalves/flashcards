@@ -1,7 +1,7 @@
 import { logger } from "./logger";
 
 const ENDPOINT = process.env.NEXT_PUBLIC_API_URL;
-const FETCH_TIMEOUT = 5000;
+const FETCH_TIMEOUT = 30000;
 
 interface TranslateRequest {
   text: string;
