@@ -2,7 +2,7 @@ services:
   - type: web
     name: flashcards-api
     runtime: node
-    buildCommand: "cd backend && rm -f .npmrc && npm install --legacy-peer-deps && npm run build"
+    buildCommand: "cd backend && npm install --legacy-peer-deps && npm run build"
     startCommand: "cd backend && npm start"
     envVars:
       - key: NODE_ENV
