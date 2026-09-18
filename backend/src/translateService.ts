@@ -9,6 +9,8 @@ interface TranslateRequest {
 
 interface TranslateResponse {
   translation: string;
+  pronunciation?: string;
+  examples?: string[];
   source?: string;
   target?: string;
   provider?: string;
@@ -27,6 +29,8 @@ const translationCache = new Map<string, TranslateResponse>();
 for (const [key, value] of Object.entries(PRELOADED_TRANSLATIONS)) {
   translationCache.set(key.toLowerCase(), {
     translation: value.translation,
+    pronunciation: value.pronunciation,
+    examples: value.examples,
     source: "en",
     target: "pt",
     provider: "Cache",
@@ -147,6 +151,8 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
 
     const translationData: TranslateResponse = {
       translation,
+      pronunciation: "",
+      examples: [],
       source: "en",
       target: "pt",
       provider: "Google Translate",
