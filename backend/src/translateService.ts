@@ -59,34 +59,74 @@ export function validateTranslateInput(text: unknown): {
   return { valid: true };
 }
 
-async function fetchTranslation(text: string): Promise<string | null> {
+async function fetchFromGoogle(text: string, signal: AbortSignal): Promise<string | null> {
+  const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=en&tl=pt&q=${encodeURIComponent(text)}`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "User-Agent": "flashcards-backend/1.0",
+    },
+    // @ts-ignore
+    signal,
+  });
+
+  if (!response.ok) {
+    logger.error("Google Translate returned error", { status: response.status });
+    return null;
+  }
+
+  const result = (await response.json()) as unknown;
+  if (Array.isArray(result) && typeof result[0] === "string" && result[0].length > 0) {
+    return result[0];
+  }
+
+  return null;
+}
+
+async function fetchFromMyMemory(text: string, signal: AbortSignal): Promise<string | null> {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|pt-BR`;
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "User-Agent": "flashcards-backend/1.0",
+    },
+    // @ts-ignore
+    signal,
+  });
+
+  if (!response.ok) {
+    logger.error("MyMemory returned error", { status: response.status });
+    return null;
+  }
+
+  const result = (await response.json()) as {
+    responseStatus?: number;
+    responseData?: { translatedText?: string };
+  };
+
+  if (result.responseStatus === 200 && result.responseData?.translatedText) {
+    return result.responseData.translatedText;
+  }
+
+  return null;
+}
+
+async function fetchTranslation(text: string): Promise<{ translation: string; provider: string } | null> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|pt-BR`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent": "flashcards-backend/1.0",
-      },
-      // @ts-ignore
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      logger.error("Translation API returned error", { status: response.status });
-      return null;
+    const googleTranslation = await fetchFromGoogle(text, controller.signal);
+    if (googleTranslation) {
+      clearTimeout(timeoutId);
+      return { translation: googleTranslation, provider: "Google Translate" };
     }
 
-    const result = (await response.json()) as {
-      responseStatus?: number;
-      responseData?: { translatedText?: string };
-    };
-    if (result.responseStatus === 200 && result.responseData?.translatedText) {
-      return result.responseData.translatedText;
+    const myMemoryTranslation = await fetchFromMyMemory(text, controller.signal);
+    clearTimeout(timeoutId);
+
+    if (myMemoryTranslation) {
+      return { translation: myMemoryTranslation, provider: "MyMemory" };
     }
 
     return null;
@@ -135,9 +175,9 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
       preview: text.substring(0, 50),
     });
 
-    const translation = await fetchTranslation(text);
+    const fetched = await fetchTranslation(text);
 
-    if (!translation) {
+    if (!fetched) {
       logger.warn("Translation API returned empty result", {
         text: text.substring(0, 50),
       });
@@ -149,12 +189,12 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
     }
 
     const translationData: TranslateResponse = {
-      translation,
+      translation: fetched.translation,
       pronunciation: "",
       examples: [],
       source: "en",
       target: "pt",
-      provider: "MyMemory",
+      provider: fetched.provider,
       cached: false,
     };
 
@@ -162,7 +202,8 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
 
     logger.success("Translation completed successfully", {
       textLength: text.length,
-      translation: translation.substring(0, 50),
+      translation: fetched.translation.substring(0, 50),
+      provider: fetched.provider,
     });
 
     return {
