@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   if (req.method !== "POST") {
     logger.warn("HTTP method not allowed", { method: req.method });
@@ -15,12 +15,12 @@ export default async function handler(
   const { text } = req.body;
 
   if (!text || typeof text !== "string") {
-    return res.status(400).json({ 
-      error: "Field 'text' is required and must be a string." 
+    return res.status(400).json({
+      error: "Field 'text' is required and must be a string.",
     });
   }
 
-  logger.info("Translation request forwarded to backend", { 
+  logger.info("Translation request forwarded to backend", {
     textLength: text.length,
     backendUrl: BACKEND_URL,
   });
@@ -63,8 +63,8 @@ export default async function handler(
     if (error instanceof Error) {
       if (error.name === "AbortError") {
         logger.error("Backend request timeout", { timeout: 15000 });
-        return res.status(504).json({ 
-          error: "Backend timeout. Please try again." 
+        return res.status(504).json({
+          error: "Backend timeout. Please try again.",
         });
       }
 
@@ -74,8 +74,8 @@ export default async function handler(
       });
     }
 
-    res.status(500).json({ 
-      error: "Failed to process translation" 
+    res.status(500).json({
+      error: "Failed to process translation",
     });
   }
 }

@@ -88,8 +88,13 @@ Seu backend está rodando em Render com:
 
 ### Erro npm E401 no build?
 - Causa comum: `package-lock.json` apontando para registry privado (ex.: Azure DevOps corporativo)
-- Solução: regenerar o lockfile com `NPM_CONFIG_REGISTRY=https://registry.npmjs.org npm install`
-- Veja `FIX_NPM_E401.md` para detalhes
+- Solução: regenerar o lockfile com registry público:
+  ```bash
+  cd backend
+  NPM_CONFIG_REGISTRY=https://registry.npmjs.org npm install --legacy-peer-deps
+  ```
+- O repositório usa `backend/.npmrc` com `registry=https://registry.npmjs.org/` — não remova esse arquivo no build
+- O `render.yaml` define `NPM_CONFIG_REGISTRY` como fallback durante o deploy
 
 ### Backend demorando para fazer deploy?
 - Render pode levar 3-5 minutos na primeira vez
