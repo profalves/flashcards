@@ -59,8 +59,68 @@ export function validateTranslateInput(text: unknown): {
   return { valid: true };
 }
 
-async function fetchFromGoogle(text: string, signal: AbortSignal): Promise<string | null> {
-  const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=en&tl=pt&q=${encodeURIComponent(text)}`;
+interface FetchedTranslation {
+  translation: string;
+  pronunciation: string;
+  examples: string[];
+  provider: string;
+}
+
+function stripHtml(text: string): string {
+  return text.replace(/<\/?b>/gi, "");
+}
+
+function parseGoogleDictionary(data: unknown): {
+  translation: string;
+  pronunciation: string;
+  examples: string[];
+} | null {
+  if (!Array.isArray(data) || !Array.isArray(data[0])) {
+    return null;
+  }
+
+  const translation = data[0]?.[0]?.[0];
+  if (typeof translation !== "string" || translation.length === 0) {
+    return null;
+  }
+
+  let pronunciation = "";
+  const pronunciationBlock = data[0]?.[1];
+  if (Array.isArray(pronunciationBlock) && typeof pronunciationBlock[3] === "string") {
+    pronunciation = `/${pronunciationBlock[3]}/`;
+  }
+
+  let examples: string[] = [];
+  for (let index = data.length - 1; index >= 0; index -= 1) {
+    const item = data[index];
+    if (!Array.isArray(item) || !Array.isArray(item[0])) {
+      continue;
+    }
+
+    const block = item[0];
+    const isExampleBlock = block.every(
+      (row: unknown) => Array.isArray(row) && typeof row[0] === "string"
+    );
+
+    if (!isExampleBlock) {
+      continue;
+    }
+
+    const texts = block
+      .map((row: string[]) => stripHtml(row[0]))
+      .filter((example: string) => example.length > 0);
+
+    if (texts.length > 0 && texts.some((example) => example.split(/\s+/).length > 1)) {
+      examples = texts.slice(0, 3);
+      break;
+    }
+  }
+
+  return { translation, pronunciation, examples };
+}
+
+async function fetchFromGoogle(text: string, signal: AbortSignal): Promise<FetchedTranslation | null> {
+  const url = `https://clients5.google.com/translate_a/single?client=dict-chrome-ex&sl=en&tl=pt&dt=t&dt=bd&dt=ex&dt=at&dt=md&dt=rm&q=${encodeURIComponent(text)}`;
   const response = await fetch(url, {
     method: "GET",
     headers: {
@@ -75,15 +135,18 @@ async function fetchFromGoogle(text: string, signal: AbortSignal): Promise<strin
     return null;
   }
 
-  const result = (await response.json()) as unknown;
-  if (Array.isArray(result) && typeof result[0] === "string" && result[0].length > 0) {
-    return result[0];
+  const parsed = parseGoogleDictionary(await response.json());
+  if (!parsed) {
+    return null;
   }
 
-  return null;
+  return {
+    ...parsed,
+    provider: "Google Translate",
+  };
 }
 
-async function fetchFromMyMemory(text: string, signal: AbortSignal): Promise<string | null> {
+async function fetchFromMyMemory(text: string, signal: AbortSignal): Promise<FetchedTranslation | null> {
   const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|pt-BR`;
   const response = await fetch(url, {
     method: "GET",
@@ -105,13 +168,18 @@ async function fetchFromMyMemory(text: string, signal: AbortSignal): Promise<str
   };
 
   if (result.responseStatus === 200 && result.responseData?.translatedText) {
-    return result.responseData.translatedText;
+    return {
+      translation: result.responseData.translatedText,
+      pronunciation: "",
+      examples: [],
+      provider: "MyMemory",
+    };
   }
 
   return null;
 }
 
-async function fetchTranslation(text: string): Promise<{ translation: string; provider: string } | null> {
+async function fetchTranslation(text: string): Promise<FetchedTranslation | null> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
@@ -119,14 +187,14 @@ async function fetchTranslation(text: string): Promise<{ translation: string; pr
     const googleTranslation = await fetchFromGoogle(text, controller.signal);
     if (googleTranslation) {
       clearTimeout(timeoutId);
-      return { translation: googleTranslation, provider: "Google Translate" };
+      return googleTranslation;
     }
 
     const myMemoryTranslation = await fetchFromMyMemory(text, controller.signal);
     clearTimeout(timeoutId);
 
     if (myMemoryTranslation) {
-      return { translation: myMemoryTranslation, provider: "MyMemory" };
+      return myMemoryTranslation;
     }
 
     return null;
@@ -190,8 +258,8 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
 
     const translationData: TranslateResponse = {
       translation: fetched.translation,
-      pronunciation: "",
-      examples: [],
+      pronunciation: fetched.pronunciation,
+      examples: fetched.examples,
       source: "en",
       target: "pt",
       provider: fetched.provider,

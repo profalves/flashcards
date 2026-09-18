@@ -14,6 +14,6 @@ export function converter(
     from: {
       pronunciation: data.pronunciation,
     },
-    examples: data.examples,
+    examples: data.examples ?? [],
   };
 }
