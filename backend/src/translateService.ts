@@ -64,12 +64,12 @@ async function fetchTranslation(text: string): Promise<string | null> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-    const response = await fetch("https://translate-api.goog/translate_a/single", {
-      method: "POST",
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|pt-BR`;
+    const response = await fetch(url, {
+      method: "GET",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "flashcards-backend/1.0",
       },
-      body: `client=gtx&sl=en&tl=pt&dt=t&q=${encodeURIComponent(text)}`,
       // @ts-ignore
       signal: controller.signal,
     });
@@ -81,13 +81,12 @@ async function fetchTranslation(text: string): Promise<string | null> {
       return null;
     }
 
-    // @ts-ignore
-    const result = await response.json();
-    if (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
-      const translation = result[0]
-        .map((item: any[]) => item[0])
-        .join("");
-      return translation;
+    const result = (await response.json()) as {
+      responseStatus?: number;
+      responseData?: { translatedText?: string };
+    };
+    if (result.responseStatus === 200 && result.responseData?.translatedText) {
+      return result.responseData.translatedText;
     }
 
     return null;
@@ -155,7 +154,7 @@ export async function translate(request: TranslateRequest): Promise<TranslateRes
       examples: [],
       source: "en",
       target: "pt",
-      provider: "Google Translate",
+      provider: "MyMemory",
       cached: false,
     };
 

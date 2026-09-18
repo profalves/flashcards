@@ -40,12 +40,14 @@ export default async function handler(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
       logger.error("Backend returned error", {
         status: response.status,
         statusText: response.statusText,
+        error: errorData.error,
       });
-      return res.status(response.status).json({ 
-        error: `Backend error: ${response.status}` 
+      return res.status(response.status).json({
+        error: errorData.error || `Backend error: ${response.status}`,
       });
     }
 
